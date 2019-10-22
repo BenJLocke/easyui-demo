@@ -12,7 +12,7 @@
 <body class="easyui-layout">
 	<div data-options="region:'north',border:false" style="height:60px;padding:1px;background-image:url(head.jpg)"></div>
 	<div data-options="region:'west',split:true,title:'HSBC System'" style="width:207px;padding:0px;">
-	<div id="sm" class="easyui-sidemenu" data-options="data:data"></div>
+	<div id="sm" class="easyui-sidemenu" data-options="data:data,onSelect:on_select"></div>
 	</div>
 	<div data-options="region:'east',split:true,title:'Query List'" style="width:210px;padding:1px;">
 			<div class="easyui-tabs" data-options="fit:true,border:false,plain:true">
@@ -52,15 +52,32 @@
 	</div>
 	<div data-options="region:'center',title:'Chat'">
 	<div class="easyui-layout" style="width:100%;height:100%;">
-		<div data-options="region:'north'" style="height:90%" id='main_chat'>north</div>
+		<div data-options="region:'north'" style="height:90%">
+			<div class="easyui-layout" style="width:100%;height:100%;">
+				<div data-options="region:'north'" style="height:35px;">
+					<div class="easyui-panel" style="padding:0px;width:100%;">
+						<a href="#" class="easyui-linkbutton" id="introduction" data-options="plain:true,disable:true" onclick='open_introduction()'> Introduction</a>
+						<a href="#" class="easyui-linkbutton" id="faq" data-options="plain:true,disable:true" onclick='open_faq()'>FAQ</a>
+						<a href="#" class="easyui-splitbutton" data-options="menu:'#mm2'">Query</a>
+					</div>
+					<div id="mm2" style="width:100px;">
+						<div data-options="iconCls:'icon-add'" onclick='create_query()'>Create</div>
+						<div data-options="iconCls:'icon-ok'" onclick='open_query()'>Open</div>
+						<div data-options="iconCls:'icon-cancel'" onclick='close_query()'>Close</div>
+					</div>
+				</div>
+				<div data-options="region:'south'" style="height:95%"> </div>
+			</div>
+		</div>
 		<div data-options="region:'south'" style="height:10%;">
 		<input class="easyui-textbox" type="text" name="content" style="height:95%;width:90%"></input>
 		<a href="javascript:void(0)" class="easyui-linkbutton" onclick="submitForm()" style="width:80px">Submit</a>
 		</div>
 	</div>
 	</div>
-	
+	<div id="win"></div>
 	<script type="text/javascript">
+		var system_name = ''
 		var data = [{
 	        text: 'Risk It',
 	        iconCls: 'icon-sum',
@@ -77,14 +94,91 @@
 	            text: 'RCT'
 	        }]
 	    }];
- 
-		function toggle(){
-			var opts = $('#sm').sidemenu('options');
-			$('#sm').sidemenu(opts.collapsed ? 'expand' : 'collapse');
-			opts = $('#sm').sidemenu('options');
-			$('#sm').sidemenu('resize', {
-				width: opts.collapsed ? 60 : 200
-			})
+
+		function on_select(item) {
+			$('#introduction').splitbutton('enable');
+			$('#faq').splitbutton('enable');
+			system_name = item.text;
+		}
+		
+		function open_introduction() {
+			if (system_name != '') {
+				$('#win').window({
+					width:600,
+					height:400,
+					modal:true,
+					title: 'Introduction ' + system_name,
+					href: 'introduction/' + system_name + ".txt",
+				});
+			} else {
+				$.messager.alert('Warning','Please select the system first.');
+			}
+		}
+		
+		function open_faq() {
+			if (system_name != '') {
+				$('#win').window({
+					width:600,
+					height:400,
+					modal:true,
+					title: 'FAQ ' + system_name,
+					href: 'faq/' + system_name + ".txt",
+				});
+			} else {
+				$.messager.alert('Warning','Please select the system first.');
+			}
+		}
+		
+		function create_query() {
+			if (system_name != '') {
+				$('#win').window({
+					width:600,
+					height:400,
+					modal:true,
+					title: 'Create Query for  ' + system_name,
+					href: 'create_query.txt',
+				});
+			} else {
+				$.messager.alert('Warning','Please select the system first.');
+			}
+		}
+		
+		function open_query() {
+			var val = $('#my_query').datagrid('getSelected');
+			if (val == null) {
+				val = $('#hot_query').datagrid('getSelected');
+			}
+			
+			if (val != null) {
+				$('#win').window({
+					width:600,
+					height:400,
+					modal:true,
+					title: 'Open Query for  ' + val.productid,
+					href: 'create_query.txt',
+				});
+			} else {
+				$.messager.alert('Warning','Please select a query first.');
+			}
+		}
+		
+		function close_query() {
+			var val = $('#my_query').datagrid('getSelected');
+			if (val == null) {
+				val = $('#hot_query').datagrid('getSelected');
+			}
+			
+			if (val != null) {
+				$.messager.confirm('Warning','Would you like to close the query ' + val.productid + '?', 
+				function (t) { 
+					if (t) {
+						$.messager.alert('Warning','The query ' + val.productid + ' has closed.');
+						}
+					}
+				);
+			} else {
+				$.messager.alert('Warning','Please select a query first.');
+			}
 		}
 	</script>
 </body>
